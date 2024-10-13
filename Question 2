@@ -1,0 +1,91 @@
+To solve the river-crossing problem involving a man, a woman, and two children with specified weights using Prolog, we can model the scenario with states representing the locations of each individual and the boat. 
+The boat has a weight limit of 100 kg, and we need to ensure that all individuals can cross the river without exceeding this limit.
+
+----
+Code:
+% Define the state of the puzzle
+% state(Man, Woman, Child1, Child2, BoatSide)
+% where BoatSide is either left (l) or right (r)
+
+% Initial state: everyone is on the left bank
+initial(state(l, l, l, l, l)).
+
+% Final state: everyone is on the right bank
+final(state(r, r, r, r, r)).
+
+% Define weights
+weight(man, 80).
+weight(woman, 80).
+weight(child1, 30).
+weight(child2, 30).
+
+% Define opposite bank
+opposite(l, r).
+opposite(r, l).
+
+% Move rules: define how people can move across the river
+move(state(MW, WW, C1W, C2W, B), state(MW1, WW1, C1W1, C2W1, B1)) :-
+    % One person moves
+    (   (B = l, B1 = r) ; (B = r, B1 = l)),
+    % Check if one person is moving
+    (   (MW1 = MW, WW1 = WW, C1W1 = C1W, C2W1 = C2W) ; % No one moves
+        (MW \= MW1 -> MW1 = B ; MW1 = MW),
+        (WW \= WW1 -> WW1 = B ; WW1 = WW),
+        (C1W \= C1W1 -> C1W1 = B ; C1W1 = C1W),
+        (C2W \= C2W1 -> C2W1 = B ; C2W1 = C2W)
+    ),
+    % Ensure weight limit is not exceeded
+    total_weight(MW1, WW1, C1W1, C2W1).
+
+move(state(MW, WW, C1W, C2W, B), state(MW1, WW1, C1W1, C2W1, B)) :-
+    % Two people move together
+    (   (B = l -> MW \= MW1 ; MW = MW),
+        (B = l -> WW \= WW1 ; WW = WW),
+        (B = l -> C1W \= C1W1 ; C1W = C1W),
+        (B = l -> C2W \= C2W1 ; C2W = C2W)
+    ),
+    % Ensure weight limit is not exceeded
+    total_weight(MW1, WW1, C1W1, C2W).
+
+% Calculate total weight of those in the boat
+total_weight(MB, WB, CB1, CB2) :-
+    findall(WT,
+            (   weight(MB), WT is 80 ;
+                weight(WB), WT is 80 ;
+                weight(child), WT is 30,
+                CB in [CB1, CB2]
+            ),
+            Weights),
+    sum_list(Weights, TotalWeight),
+    TotalWeight =< 100.
+
+% Pathfinding to find a solution from initial to final state
+path(State) :-
+    initial(State),
+    solve(State).
+
+solve(State) :-
+    final(State), !,
+    write('All crossed successfully!'), nl.
+
+solve(State) :-
+    move(State, NextState),
+    not(member(NextState)),
+    write('Crossing: '), write(NextState), nl,
+    solve(NextState).
+
+% Start the program
+:- initialization(main).
+main :- path(initial(state(l,l,l,l,l))), halt.
+----
+
+----
+Explanation:
+State Representation: Each state is represented by state(ManLocation, WomanLocation, Child1Location, Child2Location, BoatSide), where l indicates the left bank and r indicates the right bank.
+Weights: The weights of each individual are defined for checking against the boat's capacity.
+Movement Rules:
+The move/5 predicate defines how individuals can cross from one side to another.
+It checks whether one or two individuals can be in the boat without exceeding its weight limit.
+Pathfinding: The path/0 predicate initializes the process and calls solve/5, which recursively finds valid moves until it reaches the final state.
+Output: The program outputs each crossing until all individuals are successfully transported across the river.
+----
