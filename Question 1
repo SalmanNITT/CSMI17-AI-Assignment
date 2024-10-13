@@ -1,0 +1,31 @@
+Prolog program to represent this family relationship and find out who "that man" is.
+----
+The riddle: 
+"Brothers and sisters have I none": This means the speaker has no siblings.
+"my father's son": Since the speaker has no siblings, "my father's son" refers to the speaker himself.
+"that man’s father is my father’s son": This means "that man's father is me".
+From this, we can deduce:
+The speaker is the father of "that man".
+----
+
+----
+Code:
+% Define the family relationships
+father(john, me).  % 'me' is the speaker
+father(me, that_man).  % 'that_man' is the son of 'me'
+
+% Rule to find out who 'that_man' is
+who_is_that_man(ThatMan) :-
+    father(me, ThatMan).
+
+% Query to find out who 'that_man' is
+?- who_is_that_man(ThatMan).
+----
+
+----
+Explanation:
+father(john, me).: This states that John is the father of "me".
+father(me, that_man).: This states that "me" (the speaker) is the father of "that_man".
+who_is_that_man(ThatMan): This rule checks who "that man" is by looking for a child of "me".
+The query ?- who_is_that_man(ThatMan). will return the identity of "that man".
+----
